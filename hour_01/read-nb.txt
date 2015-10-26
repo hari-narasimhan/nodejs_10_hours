@@ -1,0 +1,1 @@
+I am a text file, I am going to be read in a non blocking manner!

@@ -1,0 +1,20 @@
+mkdir hello-node && cd $_
+npm init
+
+# answer the questions asked by npm init
+# touch index.js
+
+    "use strict";
+
+        console.log("Hello, world from nodejs");
+	# run the program
+	    node index.js
+
+	# Add the start up script
+	"scripts": {
+	        start: "node index.js"
+	}
+
+	# Run using scripts:start attribute
+
+	npm start

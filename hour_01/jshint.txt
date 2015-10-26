@@ -1,0 +1,18 @@
+# JSHint is a static code analysis tool for JavaScript
+
+
+# installation
+
+	npm install -g jshint || npm i -g jshint
+    	
+	# or install it as your dev dependency
+    	
+	npm install jshint --save-dev
+
+
+	# configuration (customize jshint)
+
+	1)  --config <file>
+	2)  .jshintrc
+	3)  jshintConfig 
+
