@@ -1,5 +1,6 @@
 # nodejs_10_hours
 
-Contains list of nodejs examples of the training, placed into folders for each hour.
+Contains list of nodejs examples frpm the training.
+m
 
 
