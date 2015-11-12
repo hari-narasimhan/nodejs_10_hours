@@ -1,0 +1,65 @@
+<html lang="en">
+<head>
+    <% include ../partials/head %>
+</head>
+<body class="container">
+
+    <header>
+        <% include ../partials/header %>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="row">
+                <form class="form-horizontal" method="post" action="/projects">
+                  <fieldset>
+                    <legend>Create Project</legend>
+                    <div class="form-group">
+                      <label for="inputName" class="col-lg-2 control-label">Name</label>
+                      <div class="col-lg-10">
+                        <input type="text" class="form-control" id="inputEmail" name="name" placeholder="Project Name">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="inputDescription" class="col-lg-2 control-label">Description</label>
+                      <div class="col-lg-10">
+                        <input type="text" class="form-control" id="inputDescription" name="description" placeholder="Description">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="textArea" class="col-lg-2 control-label">Team</label>
+                      <div class="col-lg-10">
+                        <textarea class="form-control" rows="3" id="team" name="team"></textarea>
+                        <span class="help-block">Enter team members separated by comma</span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="startDate" class="col-lg-2 control-label">Start Date</label>
+                      <div class="col-lg-10">
+                        <input type="date" class="form-control" id="startDate" name="startDate" placeholder="Start Date">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="endDate" class="col-lg-2 control-label">End Date</label>
+                      <div class="col-lg-10">
+                        <input type="date" class="form-control" id="endDate" name="endDate" placeholder="End Date">
+                      </div>
+                    </div
+                    <div class="form-group">
+                      <div class="col-lg-10 col-lg-offset-2">
+                        <button type="reset" class="btn btn-default">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </form>                
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <% include ../partials/footer %>
+    </footer>
+    
+</body>
+</html>

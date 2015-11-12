@@ -6,18 +6,18 @@ var mongoose = require('mongoose'),
     paginate = require('mongoose-paginate');
 
     
-var ProjectSchema = new mongoose Schema({
+var ProjectSchema = new Schema({
     name: {type:String, unique:true, index:true},
     description: {type: String},
-    startdate: {type:date, required:true},
-    enddate: {type:date}
+    startdate: {type:Date},
+    enddate: {type:Date},
     team: {type:String}
 });
 
 
 // Add the plugins
 ProjectSchema.plugin(timestamp);
-projectSchema.plugin(paginate);
+ProjectSchema.plugin(paginate);
 
 var Project = mongoose.model('Project', ProjectSchema);
 

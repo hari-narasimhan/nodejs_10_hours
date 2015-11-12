@@ -1,0 +1,24 @@
+<html lang="en">
+<head>
+    <% include ../partials/head %>
+</head>
+<body class="container">
+
+    <main>
+        <div class="jumbotron">
+            <h1>Unexpected Error</h1>
+            <p>Go <a href="/">home</a> and start again</p>
+        </div>
+        
+            <div class="alert alert-danger">
+                <strong>Oh snap!</strong> <a href="#" class="alert-link">Change a few things up</a> and try submitting again.
+                <p><%= error %></p>
+            </div>
+    </main>
+
+    <footer>
+        <% include ../partials/footer %>
+    </footer>
+    
+</body>
+</html>

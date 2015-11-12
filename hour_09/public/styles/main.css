@@ -1,0 +1,57 @@
+body {
+  background-color: #fefefe;
+}
+
+a {
+  color: #3f729b;
+}
+
+a:hover {
+  color: #1c5380;
+}
+
+.text-muted {
+  color: #90939a;
+}
+
+.navbar {
+  min-height: 50px;
+  border: 0;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+}
+
+.navbar-header {
+  float: left;
+  padding-left: 15px;
+}
+
+.navbar-brand {
+  height: 50px;
+  padding: 0 15px;
+  font-size: inherit;
+  line-height: 50px;
+}
+
+.navbar-nav {
+  float: left;
+  margin: 0;
+}
+
+.navbar-nav > li {
+  float: left;
+}
+
+.navbar-nav > li > a {
+  padding: 0 15px;
+  line-height: 50px;
+}
+
+.navbar-text {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.center-form {
+  width: 315px;
+  margin: 10% auto;
+}

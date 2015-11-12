@@ -12,7 +12,32 @@
         <div class="container">
             <div class="row">
                 <div class="col col-lg-4" class="float-right"><a class="btn btn-link" href="/projects/new">CREATE NEW</a></div>
-                
+            </div>
+            <div class="row">
+            <table class="table table-striped table-hover ">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Team</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                </tr>
+              </thead>
+              <tbody>            
+                <% projects.forEach(function(project){ %>
+                    <tr>
+                    <td></td>
+                    <td> <a href="/projects/<%= project._id %>"><%=project.name %></a></td>
+                    <td> <%=project.description %> </td>
+                    <td> <%=project.team %> </td>
+                    <td> <%=project.startDate %> </td>
+                    <td> <%=project.endDate %> </td>
+                    </tr>
+                <% }); %>
+              </tbody>
+              </table>
             </div>
         </div>
     </main>

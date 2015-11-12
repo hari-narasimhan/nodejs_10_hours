@@ -1,0 +1,8 @@
+{
+    "appConfig": {
+        "db": {
+            "url": "localhost/hour_09_dev"
+        },
+        "port": 8080
+    }
+}
