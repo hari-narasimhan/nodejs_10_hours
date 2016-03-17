@@ -1,0 +1,21 @@
+{
+  "name": "hour_10",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "Hari Narasimhan <harin76@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "4.13.4",
+    "lodash": "4.6.1"
+  },
+  "devDependencies": {
+    "chance": "1.0.1",
+    "nodemon": "1.9.1"
+  }
+}
