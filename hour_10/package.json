@@ -11,6 +11,7 @@
   "author": "Hari Narasimhan <harin76@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "ejs": "^2.4.1",
     "express": "4.13.4",
     "lodash": "4.6.1"
   },

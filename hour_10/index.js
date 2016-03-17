@@ -2,8 +2,14 @@ var express = require('express');
 var fs = require("fs");
 var _ = require("lodash");
 
+
 var app = express();
 var staff = [];
+
+//app.set('views', './views');
+app.set('view engine', 'ejs');
+app.set('view options', {layout: 'layout.ejs'});
+app.use(express.static('public'));
 
 fs.readFile('staff.json', {encoding:'utf8'},function (err, data){
   if(err) throw err;
@@ -20,7 +26,8 @@ app.get('/*', function(req, res, next){
 });
 
 app.get('/', function(req, res){
-  res.send("Welcome to expressjs tutorials!")
+  //res.send("Welcome to expressjs tutorials!")
+  res.render('index', {message: "welcome to expressjs, tutorials"});
 });
 
 
