@@ -12,4 +12,4 @@ server.on('listening',function(){
     console.log('server listening on ' + address.address + ':' + address.port);
 });
 
-server.bind(4000);
+server.bind(4000, '127.0.0.1');

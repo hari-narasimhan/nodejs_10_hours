@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function route(handle, pathname) {
     console.log("About to route a request for " + pathname); 
