@@ -1,0 +1,38 @@
+<div class="container">
+  <div class="row">
+    <div class="col col-lg-8">
+      <form class="form-horizontal">
+        <fieldset>
+          <legend>{{staff.fullname}}</legend>
+        </fieldset>
+        <div class="form-group">
+          <label for="firstname" class="col-lg-2 control-label">First Name</label>
+          <div class="col-lg-10">
+            <input type="text" class="form-control" id="firstname" placeholder="First Name" value="{{staff.firstname}}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="lastname" class="col-lg-2 control-label">Last Name</label>
+          <div class="col-lg-10">
+            <input type="text" class="form-control" id="lastname" placeholder="Last Name" value="{{staff.lastname}}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="firstname" class="col-lg-2 control-label">Skills</label>
+          <div class="col-lg-10">
+            <input type="text" class="form-control" id="skills" placeholder="Skills" value="{{staff.skills}}">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-lg-10 col-lg-offset-2">
+            <button type="reset" class="btn btn-default" onclick="window.location='/staff'">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col col-lg-4">
+      <img src="{{staff.profileUrl}}" class="img-responsive" alt="Responsive image">
+    </div>
+  </div>
+</div>

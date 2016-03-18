@@ -9,6 +9,7 @@ function generateRandomPerson () {
   return {
     firstname: first,
     lastname: last,
+    gender: gender,
     email:  first + '.' + last + '@example.com'
   };
 }

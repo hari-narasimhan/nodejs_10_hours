@@ -1,0 +1,26 @@
+<div class = "container">
+<table class="table table-striped table-hover ">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Full Name</th>
+      <th>Skills</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each staff}}
+    <tr>
+      <td>{{@index}}</td>
+      <td>{{firstname}}</td>
+      <td>{{lastname}}</td>
+      <td>
+        <a href="staff/{{fullname}}"> {{fullname}}</a>
+      </td>
+      <td>&nbsp;</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+</div>
