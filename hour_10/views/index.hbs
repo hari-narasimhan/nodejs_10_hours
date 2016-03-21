@@ -1,7 +1,20 @@
+
+
 <div class="container">
   <div class="jumbotron">
     <h1>Skills Database</h1>
     <p>Organize, explore and manage your organizations skills at one place</p>
-    <p><a class="btn btn-primary btn-lg">Learn more</a></p>
+    <p>
+      <input type="text" class="form-control" id="skills" placeholder="Search Skill" value="{{staff.skills}}">
+      <br>
+      <a class="btn btn-primary btn-lg" onclick="searchSkills()">Search</a>
+    </p>
   </div>
 </div>
+
+<script>
+  function searchSkills() {
+    var skills= $('#skills').val();
+    window.location = '/staff?skills=' + skills;
+  }
+</script>

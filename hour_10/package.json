@@ -11,6 +11,7 @@
   "author": "Hari Narasimhan <harin76@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "1.15.0",
     "express": "4.13.4",
     "express-handlebars": "3.0.0",
     "lodash": "4.6.1"
