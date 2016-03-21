@@ -9,8 +9,16 @@ var router = express.Router({
 var staff = require('../db/staff');
 
 // GET /staff
-router.get('/', function (req, res) {
-  res.render('staff/list', { staff:staff });
+app.get('/staff', function (req, res) {
+  var filteredStaff = staff;
+
+  if (req.query && req.query.skills) {
+    filteredStaff = _.filter(staff, function (s) {
+      return _.includes(s.skills, req.query.skills);
+    });
+  }
+
+  res.render('staff/list', { staff:filteredStaff });
 });
 
 // GET /staff/formatted
