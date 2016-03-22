@@ -44,7 +44,7 @@
   }
 
   function update () {
-      $.ajax('/staff/{{staff.fullname}}', {
+      $.ajax('/staff/{{staff._id}}', {
         method: 'PUT',
         data: {
           skills: $('#skills').val()

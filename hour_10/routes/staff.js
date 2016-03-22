@@ -6,48 +6,50 @@ var _ = require('lodash');
 var router = express.Router({
   mergeParams: true,
 });
-var staff = require('../db/staff');
+
+//var staff = require('../db/staff');
+var Staff = require('../models/staff');
 
 // GET /staff
-app.get('/staff', function (req, res) {
-  var filteredStaff = staff;
+router.get('/', function (req, res) {
+  var skills = req.query.skills || '';
+  var query = req.query.skills ? { skills: new RegExp(skills, 'i') } : {};
 
-  if (req.query && req.query.skills) {
-    filteredStaff = _.filter(staff, function (s) {
-      return _.includes(s.skills, req.query.skills);
-    });
-  }
+  Staff.find(query, function (err, filteredStaff) {
 
-  res.render('staff/list', { staff:filteredStaff });
-});
+    if (err) res.status(400).send('Error Occured');
 
-// GET /staff/formatted
-router.get('/formatted', function (req, res) {
-  var fmt = '';
-  staff.forEach(function (s) {
-    fmt += '<a href="/' + s.fullname + '">' + s.fullname + '</a><br>';
+    res.render('staff/list', { staff:filteredStaff });
   });
-
-  res.send(fmt);
 });
 
 // GET /staff/:fullname
-router.get('/:fullname', function (req, res) {
-  var fullname = req.params.fullname;
-  var s = _.find(staff, { fullname: fullname });
-  var gender = s.gender === 'Female' ? 'women' : 'men';
-  s.profileUrl = 'http://api.randomuser.me/portraits/' + gender + '/' + (_.random(1, 100)) + '.jpg';
-  res.render('staff/view', { staff:s });
+router.get('/:id', function (req, res) {
+  var id = req.params.id;
+  Staff.findById(id, function (err, s) {
+    if (err) res.status(400).send('Error Occurred');
+    var gender = s.gender === 'Female' ? 'women' : 'men';
+    s.profileUrl = 'http://api.randomuser.me/portraits/' +
+    gender +
+    '/' + (_.random(1, 100)) + '.jpg';
+
+    res.render('staff/view', { staff:s });
+  });
+
 });
 
 // PUT /staff/:fullname
-router.put('/:fullname', function (req, res) {
-  var fullname = req.params.fullname;
+router.put('/:id', function (req, res) {
+  var id = req.params.id;
   var skills = req.body.skills;
-  var s = _.find(staff, { fullname: fullname });
-  console.log(fullname, skills);
-  s.skills = skills;
-  res.send(JSON.stringify(s));
+  Staff.findById(id, function (err, staff) {
+    if (err) return res.status(400).send('Error Occurred');
+    staff.skills = skills;
+    staff.save(function (err, updatedStaff) {
+      if (err) res.status(400).send('Error Occurred');
+      res.send(updatedStaff);
+    });
+  });
 });
 
 module.exports = router;
