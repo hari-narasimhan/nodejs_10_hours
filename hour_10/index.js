@@ -14,13 +14,6 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-
-// app.use?
-app.get('/*', function (req, res, next) {
-  console.log('contains en');
-  next();
-});
-
 app.get('/', function (req, res) {
   res.render('index');
 });
