@@ -11,11 +11,17 @@
   "author": "Hari Narasimhan <harin76@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "async": "1.5.2",
+    "bcrypt-nodejs": "0.0.3",
     "body-parser": "1.15.0",
+    "cookie-parser": "1.4.1",
     "express": "4.13.4",
     "express-handlebars": "3.0.0",
+    "express-session": "1.13.0",
     "lodash": "4.6.1",
-    "mongoose": "4.4.8"
+    "mongoose": "4.4.8",
+    "passport": "0.3.2",
+    "passport-local": "1.0.0"
   },
   "devDependencies": {
     "chance": "1.0.1",
