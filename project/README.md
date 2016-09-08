@@ -278,7 +278,7 @@ open app/views/pages/layout.html and paste the fragment given below
 </html>
 ```
 
-finally let us fix the error.html, as usual paste the code fragment given below into app/views/pages/error.html
+let us fix the error.html, as usual paste the code fragment given below into app/views/pages/error.html
 
 ```
 {% extends 'layout.html' %}
@@ -298,6 +298,15 @@ finally let us fix the error.html, as usual paste the code fragment given below 
 </div>
 {% endblock %}
 
+```
+
+The title at the index page needs to change, head over to app/controllers/home.html and change the title to `Q4 Store Locator`
+
+```
+res.render('index', {
+  title: 'Q4 Store Locator',
+  articles: articles
+});
 ```
 
 That's it run gulp and point your browser to [http://localhost:3000] you should be able to see a responsive application.
