@@ -114,7 +114,7 @@ rename all .swig .html, now the app/views/pages folder should look as shown belo
     `-- partials
 ```
 
-now if you try to run the application you must get an error, let us fix it
+if you try to run the application you will get an error, let us fix it
 
 open `config/express.js` and modify the app.engine configuration as shown below
 
