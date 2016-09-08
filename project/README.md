@@ -309,4 +309,4 @@ res.render('index', {
 });
 ```
 
-That's it run gulp and point your browser to [http://localhost:3000] you should be able to see a responsive application.
+That's it run gulp and point your browser to http://localhost:3000 you should be able to see a responsive application.
