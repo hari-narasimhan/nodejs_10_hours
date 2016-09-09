@@ -7,6 +7,8 @@ The project is about building a store locator, using GoogleMaps and MongoDB. The
 
 The adding of stores is an administrative function and can be performed only by an admin.
 
+# PART 1
+
 ## Step 1 - Installing necessary modules
 
 ### yeoman and generator-express, gulp and bower
@@ -310,3 +312,470 @@ res.render('index', {
 ```
 
 That's it run gulp and point your browser to [localhost]: (http://localhost:3000) you should be able to see a responsive application.
+
+# PART 2 - Setup Geolocation, Create models, views and controllers
+
+## Setup HTML5 Geolocation API
+
+Let us use the HTML5 Geolocation API to get the current position.
+Create a new file `getCurrentPosition.js` inside `public/js` folder
+
+```
+// Function to track user position
+function getCurrentPosition() {
+
+  // Check browser` support
+  if (navigator.geolocation) {
+    var options = {
+      enableHighAccuracy: true,
+      timeout: Infinity,
+      maximumAge: 0,
+    };
+    navigator.geolocation.watchPosition(getUserPosition, trackError, options);
+  } else {
+    alert('Ops; Geolocation is not supported');
+  }
+
+  // Get the user position
+  function getUserPosition(position) {
+    // Check longitude and latitude
+    console.log(position.coords.latitude);
+    console.log(position.coords.longitude);
+
+    // Create the user' coordinates
+    var googlePos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    var mapOptions = {
+      zoom: 12,
+      center: googlePos,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+    };
+
+    // Set a variable to get the HTML div
+    var mapObj = document.getElementById('map');
+
+    // Create the map and passing: map div and map options
+
+    var googleMap = new google.maps.Map(mapObj, mapOptions);
+
+    // Setup a marker on map with user' location
+    var markerOption = {
+      map: googleMap,
+      position: googlePos,
+      animation: google.maps.Animation.DROP,
+    };
+
+    // Create a instance with marker on map
+    var googleMarker = new google.maps.Marker(markerOption);
+
+    // Get the user's complete address information using the Geocoder
+    // Google API
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({
+        latLng: googlePos,
+      },
+      function (results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          if (results[1]) {
+            var popOpts = {
+              content: results[1].formatted_address,
+              position: googlePos,
+            };
+
+            // Setup an info window with user information
+            var popup = new google.maps.InfoWindow(popOpts);
+            google.maps.event.addListener(googleMarker,
+              'click',
+              function () {
+                popup.open(googleMap);
+              });
+          } else {
+            alert('No results found');
+          }
+        } else {
+          alert('Uhh, failed: ' + status);
+        }
+      });
+  }
+
+  // Setup a error function
+  function trackError(error) {
+    var err = document.getElementById('map');
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        err.innerHTML = 'User denied Geolocation.';
+        break;
+      case error.POSITION_UNAVAILABLE:
+        err.innerHTML = 'Information is unavailable.';
+        break;
+      case error.TIMEOUT:
+        err.innerHTML = 'Location timed out.';
+        break;
+      case error.UNKNOWN_ERROR:
+        err.innerHTML = 'An unknown error.';
+        break;
+    }
+  }
+}
+
+// Call the function to initialize the current position
+getCurrentPosition();
+
+```
+
+Now if the application is run, you will be prompted to allow location tracking. To see the map you need to add a google map api key.
+Refer https://developers.google.com/maps/documentation/javascript/get-api-key
+
+Once you have your key, place it in the footer.html at appropriate line (just the key, no square brackets required).
+
+`<script src="https://maps.googleapis.com/maps/api/js?key=[YOUR_KEY_HERE]"></script>`
+
+run the application, and map with your current location should appear in the home page.
+
+## Create a mongoose model to handle locations
+
+Add a new file location.js inside app/models and add the fragment given below
+
+```
+'use strict';
+
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+var LocationSchema = new Schema({
+  title: String,
+  coordinates: {
+    type: [Number],
+    index: '2dsphere',
+  },
+
+  created: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+var Location = mongoose.model('Location', LocationSchema);
+
+module.exports = Location;
+
+```
+Mongoose models are created from a schema definition.
+
+Though mongodb is schemaless it sometimes helps to apply schema to your data. Mongoose just does that for us.
+Mongoose helps us define a schema and provides us tools to validate data at application layer.
+
+A quick mention about `2dsphere` index. The `2dsphere` is a special index type that helps querying a sphereical geometry structure like the Earth.
+`2dsphere` supports MongoDB geospatial queries.
+
+## Create a controller to handle CREATE and SEARCH locations along with a form to capture the location.
+
+With the model defined, let us create a controller to perform operations on the model.
+
+create a new file locations.js inside app/controllers
+
+
+Create a new file inside app/controllers called locations.js and add the fragment below
+
+```
+'use strict';
+
+var express = require('express');
+var router = express.Router();
+
+var Location = require('../models/location');
+
+module.exports = function (app) {
+  app.use('/', router);
+};
+
+/**
+* List all locations
+*/
+router.get('/locations', function (req, res, next) {
+
+  Location.find(function (err, locations) {
+
+    if (err) return next(err);
+
+    res.render('locations', {
+      title: 'Locations',
+      locations: locations,
+      lat: 13.012284,
+      long: 80.210410,
+    });
+  });
+});
+
+/**
+* Render a page to create a new location
+*/
+router.get('/locations/add', function (req, res, next) {
+  res.render('add-location', {
+    title: 'Add a new Location',
+  });
+});
+
+/**
+* Add a new location
+*/
+router.post('/locations', function (req, res, next) {
+  // Fill loc object with request body
+  var loc = {
+    title: req.body.title,
+    coordinates: [req.body.long, req.body.lat],
+  };
+
+  var location = new Location(loc);
+
+  // save the data received
+  location.save(function (err, location) {
+    if (err) {
+      return res.status(400).send({
+        message: err,
+      });
+    }
+
+    res.render('add-location', {
+      message: 'Added Successfully',
+      obj: location,
+    });
+  });
+});
+
+/**
+* Locate shops near me
+*/
+
+router.post('/nearme', function (req, res, next) {
+
+    // Setup limit
+    var limit = req.body.limit || 10;
+
+    // Default max distance to 10 kilometers
+    var maxDistance = req.body.distance || 10;
+
+    // Setup coords Object = [ <longitude> , <latitude> ]
+    var coords = [];
+
+    // Create the array
+    coords[0] = req.body.longitude;
+    coords[1] = req.body.latitude;
+
+    // find a location
+    Location.find({
+        coordinates: {
+          $near: {
+              $geometry: {
+                  type: 'Point',
+                  coordinates: coords,
+                },
+
+              // distance to radians
+              $maxDistance: maxDistance * 1609.34,
+              spherical: true,
+            },
+        },
+      }).limit(limit).exec(function (err, locations) {
+          console.log(locations)
+          if (err) {
+            return res.status(500).json(err);
+          }
+
+          res.render('locations', {
+            title: 'Locations',
+            locations: locations,
+            lat: 13.012284,
+            long: 80.210410,
+          });
+        });
+  });
+
+
+```
+
+In the above fragment we create a router and add routes to list locations to render a location create page and finally a route to save the submitted location.
+We have also added a route to find locations through the `/nearme` route. The `/nearme` route queries the mongodb using the geolocation evcd
+
+wondering from where the controllers are loaded, check config/express.js in the following lines
+
+```
+var controllers = glob.sync(config.root + '/app/controllers/*.js');
+controllers.forEach(function (controller) {
+  require(controller)(app);
+});
+```
+
+
+
+## Create views
+
+Add locations.html inside app/views/pages and add the fragment given below
+
+```
+{% extends 'layout.html' %}
+{% block content %}
+<div class="section">
+  <div class="container">
+    <br><br>
+    <h1 class="header center red-text">{{ title }}</h1>
+    <div class="row center">
+      <h5 class="header col s12 light">Welcome to
+              {{ title }}
+            </h5>
+    </div>
+    <div class="row">
+      <div class="col s12">
+        <form action="/nearme" method="POST">
+          <div class="row">
+            <div class="col s12" id="map" style="height:600px;width: 100%; margin-bottom: 20px"></div>
+            <br>
+            <h5 class="grey-text center">
+                            Find a store near by you
+                   </h5>
+            <br>
+            <div class="input-field col s5">
+              <input placeholder="Insert Longitude" name="longitude" id="longitude" type="text" class="validate" value="{{long}}">
+              <label for="longitude">Longitude</label>
+            </div>
+            <div class="input-field col s5">
+              <input placeholder="Insert latitude" name="latitude" id="latitude" type="text" class="validate" value="{{lat}}">
+              <label for="latitude">Latitude</label>
+            </div>
+            <div class="input-field col s2">
+              <select class="browser-default" name="distance" id="distance">
+                     <option value="" disabled selected>Distance
+                     </option>
+                     <option value="2">1 Km</option>
+                     <option value="3">2 km</option>
+                     <option value="9">5 km</option>
+                     <option value="9">10 km</option>
+                   </select>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn red waves-effect waves-light" type="submit" name="action">SUBMIT</button>
+          </div>
+        </form>
+        <br>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+      var loadMap = function() {
+          // Center map with current lat and long (Simulated with fixed point for this example)
+         var googlePos = new google.maps.LatLng({{ lat }} , {{ long }});
+          // Setup map options
+         var mapOptions = {
+           zoom : 12,
+           center :googlePos,
+           mapTypeId :google.maps.MapTypeId.ROADMAP
+         };
+
+        // Set a variable to get the HTML div
+        var mapObj = document.getElementById('map');
+        var googleMap = new google.maps.Map(mapObj, mapOptions);
+
+         // Create markers array to hold all markers on map
+        var markers = [];
+        // Using the Swig loop to get all data from location variable
+        {% for item in locations %}
+
+          // Setup a lat long object
+          var latLng = new google.maps.LatLng({{ item.coordinates[1] }},
+           {{ item.coordinates[0] }});
+
+          // Create a marker
+          var marker = new google.maps.Marker({
+            map :googleMap,
+            position: latLng,
+            animation :google.maps.Animation.DROP
+          });
+
+          markers.push(marker);
+            // Setup the info window
+          var infowindow = new google.maps.InfoWindow();
+            // Add an event listener to click on each marker and show an info window
+
+          google.maps.event.addListener(marker, 'click', function () {
+          // using the tittle from the Swig looping
+            infowindow.setContent('<p>' + " {{ item.title }} " + '</p>');
+            infowindow.open(googleMap, this);
+          });
+          {% endfor %}
+        };
+       // load the map function
+       window.onload = loadMap;
+       </script>
+       {% endblock %}
+```
+
+This is our main page it allows us to search stores around a location provided in the form below. This is not yet functional, we will be adding the functionality soon.
+
+Let us create a Add Location form. Create add-location.html inside app/views/pages folder and add the fragment below
+
+```
+{% extends 'layout.html' %}
+{% block content %}
+<div class="section">
+  <div class="container">
+  <br><br>
+    <h1 class="header center red-text">{{ title }}</h1>
+    <div class="row center">
+      <h5 class="header col s12 light">Welcome to
+       {{ title }}
+      </h5>
+    </div>
+    <div class="row">
+      <div class="col s12">
+          {% if message %}
+            <h4 class="center red-text">
+                  {{ message }}
+            </h4>
+          {% endif %}
+          <h5 class="grey-text">
+                Add new location
+          </h5>
+          <br>
+          <form action="/locations" method="POST">
+            <div class="row">
+            <div class="input-field col s4">
+              <input placeholder="Insert Location Name"
+               name="title" id="name" type="text" class="validate">
+              <label for="title">Name</label>
+              </div>
+              <div class="input-field col s4">
+                <input placeholder="Insert Longitude"
+                 name="long" id="long" type="text" class="validate">
+                <label for="long">Longitude</label>
+              </div>
+              <div class="input-field col s4">
+              <input placeholder="Insert latitude" name="lat" id="lat"
+               type="text" class="validate">
+              <label for="lat">Latitude</label>
+              </div>
+                <br>
+                <br>
+              <div class="col s12 center">
+              <button class="btn red waves-effect waves-light"
+               type="submit" name="action">SUBMIT</button>
+              </div>
+            </div>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endblock %}
+
+```
+
+That's it. Add few loctions, RR tower's coordinates are
+
+lat: 13.012284,
+long: 80.210410,
+
+Add few more locations (stores) around the these coordinates. Navigate to the locations page (http://localhost:3000/locations) key in the longitude, latiude with distance and hit SUBMIT, the screen should be refreshed with the locations around the coordinates.
+
+That's it for now, in the next tutorial we will secure the application with passport.
