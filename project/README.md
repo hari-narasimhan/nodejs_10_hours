@@ -779,3 +779,411 @@ long: 80.210410,
 Add few more locations (stores) around the these coordinates. Navigate to the locations page (http://localhost:3000/locations) key in the longitude, latiude with distance and hit SUBMIT, the screen should be refreshed with the locations around the coordinates.
 
 That's it for now, in the next tutorial we will secure the application with passport.
+
+# PART 3 - User authentication using Passport
+
+## Starting with local user authentication
+
+We will leverage the passportjs module to implement local user authentication. We also need passport-local strategy bcrypt and validator modules to assist in encryption and validation of the passwords.
+
+run the following command
+
+```
+npm install --save passport passport-local bcrypt validator
+```
+
+since bcrypt requires compilation with a c++ compiler it could throw errors if a suitable compiler is not available. In ubuntu machine install build-essential using `sudo apt-get install build-essential`. For other platforms please check appropriate instructions.
+
+### create a basic user model
+
+add user.js inside `/app/models`
+
+```
+'use strict';
+
+var mongoose = require('mongoose');
+var bcrypt = require('bcrypt');
+var validator = require('validator');
+
+var Schema = mongoose.Schema;
+
+var UserSchema = new Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+UserSchema.pre('save', function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  // Rehash the password everytime the user changes it.
+  this.password = User.encryptPassword(this.password);
+  next();
+});
+
+UserSchema.methods = {
+  validPassword: function (password) {
+    return bcrypt.compareSync(password, this.password);
+  },
+};
+
+UserSchema.statics = {
+  makeSalt: function () {
+    return bcrypt.genSaltSync(10);
+  },
+
+  encryptPassword: function (password) {
+    if (!password) {
+      return '';
+    }
+
+    return bcrypt.hashSync(password, User.makeSalt());
+  },
+
+  register: function (email, password, cb) {
+    var user = new User({
+      email: email,
+      password: password,
+    });
+
+    user.save(function (err) {
+      cb(err, user);
+    });
+  },
+};
+
+var User = mongoose.model('User', UserSchema);
+
+User.schema.path('email').validate(function (email) {
+  return validator.isEmail(email);
+});
+
+User.schema.path('password').validate(function (password) {
+  return validator.isLength(password, 6);
+});
+
+module.exports = User;
+
+```
+
+A quick explanation of the user model
+* Model is simple with a email as the key attribute and has a unique index
+* The validPassword is a instance method which helps with validating the password
+* The pre save hook is used to hash the password before each save and uses bcrypt module
+* Static methods makeSalt, encrypt and register help us keep the logic consise and within the user model
+* The validator module is used to add validations to the User schema to ensure that the email is in appropriate format and password has a minimum length of 6 characters
+
+### configure passport
+Add passport.js within config folder and add the fragment below
+```
+'use strict';
+
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
+var User = require('../app/models/user');
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+  User.findById(id, done);
+});
+
+function authFail(done) {
+  done(null, false, {
+    message: 'Incorrent email/password combination',
+  });
+}
+
+passport.use(new LocalStrategy({
+  usernameField: 'email',
+}, function (email, password, done) {
+  User.findOne({
+    email: email,
+  }, function (err, user) {
+    if (err) return done(err);
+    if (!user) {
+      return authFail(done);
+    }
+
+    if (!user.validPassword(password)) {
+      return authFail(done);
+    }
+
+    return done(null, user);
+  });
+}));
+
+module.exports = passport;
+
+```
+
+now include the passport and local strategy when the application starts. Add following code in `config/express.js`
+
+require the passport configuration
+```
+var passport = require('./passport');
+```
+
+Add the middleware to express after the methodOverride middleware
+
+```
+app.use(passport.initialize());
+app.use(passport.session());
+```
+
+### Creating the login and register View
+
+Add login.html and register.html and add the fragment given below
+
+login.html
+```
+{% extends 'layout-auth.html' %}
+{% block content %}
+<div class="container">
+  <h4>Login</h4>
+  <div class="row ">
+    <div class="col s6 offset-s3">
+      <form action="/users/login" method="POST">
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="email" name="email" type="email" class="validate">
+            <label for="email" class="active">Email</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="password" name="password" type="password" class="validate">
+            <label for="password" class="active">Password</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 center">
+          <button class="btn red waves-effect waves-light" type="submit" name="action">LOGIN</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+```
+
+register.html
+
+```
+{% extends 'layout-auth.html' %}
+{% block content %}
+<div class="container">
+  <h4>Register</h4>
+  <div class="row ">
+    <div class="col s6 offset-s3">
+      <form action="/users/register" method="POST">
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="email" name="email" type="email" class="validate">
+            <label for="email" class="active">Email</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="password" name="password" type="password" class="validate">
+            <label for="password" class="active">Password</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input id="confirm" name= "confirm" type="password" class="validate">
+            <label for="confirm" class="active">Confirm Password</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 center">
+          <button class="btn red waves-effect waves-light"
+           type="submit" name="action">Register</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+```
+
+### Add routes and controller
+
+Create user.js in `app/controllers` folder and add the frament below
+
+```
+'use strict';
+
+var express = require('express');
+var router = express.Router();
+
+var passport = require('../../config/passport');
+var User = require('../models/user');
+
+module.exports = function (app) {
+  app.use('/', router);
+};
+
+router.get('/users/register', function (req, res, next) {
+  res.render('register');
+});
+
+router.post('/users/register', function (req, res, next) {
+  console.log(req.body);
+  User.register(req.body.email, req.body.password, function (err, user) {
+    if (err) {
+      return next(err);
+    }
+
+    console.log(req.body);
+    req.login(user, function (err) {
+      if (err) return next(err);
+      res.redirect('/');
+    });
+  });
+});
+
+router.get('/users/login', function (req, res, next) {
+  res.render('login');
+});
+
+router.post('/users/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/users/login',
+}));
+
+```
+
+We have added routes and actions for login and register, we use the passport to authenticate the user.
+
+Create a folder named `util` inside the app folder  and add a file named 'index.js'. Now add the code fragment given below to `index.js`
+
+```
+'use strict';
+
+module.exports.isLoggedIn = function (req, res, next) {
+  if (req.isAuthenticated())
+      return next();
+  res.redirect('/users/login');
+};
+```
+
+Let us make sure that one must be logged in to add locations, we can protect the route with the above middleware.
+
+Make the below changes to `app/controllers/location.js`
+
+require the util
+```
+var util = require('../util');
+```
+
+and include the middleware in the route as shown below
+```
+router.get('/locations/add', util.isLoggedIn, function (req, res, next) {
+  res.render('add-location', {
+    title: 'Add new Location',
+  });
+});
+```
+
+However, we have not done any session management, without which isLoggedIn will always return false.
+
+we need few more modules, let us add `express-session` and `connect-mongo` a mongo session connector for session management
+
+```
+npm install --save-dev express-session connect-mongo
+```
+
+head over to `config/express.js` and add these changes
+
+require the config
+`var config = require('./config');`
+
+include express session and configure it to work with connect-mongo
+```
+var session = require('express-session');
+var MongoSessionStore = require('connect-mongo')(session);
+```
+
+Below the line
+`app.use(express.static(config.root + '/public'));`
+
+add the following fragment
+
+```
+app.use(session({
+  secret: 'AB1GS3CR3T',
+  saveUninitialized: true,
+  resave: true,
+  store: new MongoSessionStore({
+    url: config.db,
+    collection: 'sessions',
+  }),
+}));
+```
+
+we are done now and have a protected route which works between sessions.
+
+### Adding a logout feature
+
+Open the `app/views/pages/layout.html` and replace the two menu items inside the __ul__ tag
+
+```
+<ul class="right hide-on-med-and-down">
+  <li><a href="/locations">Locations</a></li>
+  <li><a href="/locations/add">Add Location</a></li>
+  {% if user %}
+  <li><a href="/users/logout">Logout</a></li>
+  {% endif %}    </ul>
+<ul id="nav-mobile" class="side-nav" style="transform:translateX(-100%);">
+  <li><a href="/locations">Locations</a></li>
+  <li><a href="/locations/add">Add Location</a></li>
+  {% if user %}
+  <li><a href="/users/logout">Logout</a></li>
+  {% endif %}
+</ul>
+```
+
+We have removed the unused store menu item for logout. We need to display logout only when the user has logged in to achieve we check if user object is part of the request, but how to get the user object into the request. To do this we will use express middleware to set up request local variable for all requests.
+
+open `app/config/express.js` and below the line `app.use(passport.session)` add the piece of code provided below
+
+```
+app.use(function (req, res, next) {
+  res.locals.user = req.user;
+  console.log(req.user);
+  next();
+});
+```
+
+The above code is a middleware that plucks req.user and adds it to req.locals, this is special as it allows all templates to access details of logged in user.
+
+___NOTE: If you investigate the user object you will find that it also returns the hased password. It is not a good practice to return the password field. I will leave it as an exercise to avoid returning the password when the user object is fetched from the database___
+
+One more thing we need to do is at add the route, open `app/controllers/user` and add the following route
+
+```
+router.get('/users/logout', function (req, res, next) {
+  req.logout();
+  res.redirect('/');
+});
+```
+
+One more exercise you can do is to add sign-up and login links to the header when the user is not logged in. 
