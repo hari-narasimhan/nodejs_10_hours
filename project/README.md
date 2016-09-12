@@ -1139,7 +1139,7 @@ app.use(session({
 }));
 ```
 
-we are done now and have a protected route which works between sessions.
+we are done now and have a protected route which works across sessions.
 
 ### Adding a logout feature
 
@@ -1173,11 +1173,11 @@ app.use(function (req, res, next) {
 });
 ```
 
-The above code is a middleware that plucks req.user and adds it to req.locals, this is special as it allows all templates to access details of logged in user.
+The above code is an express middleware that plucks req.user and adds it to req.locals, this is special as it allows all templates to access details of logged in user.
 
 ___NOTE: If you investigate the user object you will find that it also returns the hased password. It is not a good practice to return the password field. I will leave it as an exercise to avoid returning the password when the user object is fetched from the database___
 
-One more thing we need to do is at add the route, open `app/controllers/user` and add the following route
+One more thing we need to do is to add the route, open `app/controllers/user` and add the following route
 
 ```
 router.get('/users/logout', function (req, res, next) {
@@ -1186,4 +1186,4 @@ router.get('/users/logout', function (req, res, next) {
 });
 ```
 
-One more exercise you can do is to add sign-up and login links to the header when the user is not logged in. 
+We do not have Login and Sign-up links as anexercise you can add sign-up and login links to the header. The links must be displayed only when the user is not logged in.
