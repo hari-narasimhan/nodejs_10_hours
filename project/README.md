@@ -1187,3 +1187,72 @@ router.get('/users/logout', function (req, res, next) {
 ```
 
 We do not have Login and Sign-up links as anexercise you can add sign-up and login links to the header. The links must be displayed only when the user is not logged in.
+
+# PART 4 - Testing
+
+Let us start by installing required modules. Install mocha, should and supertest, these lilbraries are installed using --save-dev option
+
+`npm install --save-dev mocha should supertest`
+
+supertest is a library that allows us to test server requests and should is our assertion library.
+
+create a `test` directory inside project folder along with app, config public etc.
+
+Add a test script to package.json inside scripts section
+
+```
+"scripts": {
+  "start": "node app.js",
+  "test" : "NODE_ENV=test ./node_modules/.bin/mocha ./test"
+}
+```
+Please note that mocha can also be installed globally using -g flag. But the above approach will insulate you against mocha version changes. If you are using mocha globally the test script will simply change to `mocha ./test`
+
+Test mocha installation by running `npm test` or `npm t` from command line. You should see output as `0 passing (x ms)`
+
+Create a new file user.js inside the test folder and add the following fragment.
+
+```
+var should = require('should');
+var request = require('supertest');
+var app = require('../app');
+var User = require('../app/models/user');
+
+describe('User management', function () {
+  before(function (done) {
+    User.remove({}, done);
+  });
+
+  describe('Register a new user', function () {
+    it('Should register a new valid user', function (done) {
+      request(app)
+        .post('/users/register')
+        .send({ email: 'abc@new.com', password: 'TOPS3CR3T' })
+        .expect(302)
+        .end(function (err, res) {
+          res.text.should.containEql('Redirecting to /');
+          done(err);
+        });
+    });
+
+    it('Should throw a error for invalid user', function (done) {
+      request(app)
+        .post('/users/register')
+        .send({ email: 'abc@new.com', password: '' })
+        .expect(500)
+        .end(function (err, res) {
+          done(err);
+        });
+    });
+  });
+});
+
+```
+
+We have added two tests one positive and another negative. Currently all errors from server are returned as 500 (Internal server Error). However this is not correct, as an exercise change the error 400 (Bad Request). You will have to set the err.status in the controller (err.status = 400). Once done you can refactor the test case as well.
+
+This concludes our tutorial and exercise, lots more can be done for instance implement OAuth authentication, improve UI etc. I will stop here and allow each one of you to explore further.
+
+The inspiration for the exercise was from the book [Nodejs 6x Blueprints] https://www.packtpub.com/web-development/nodejs-6x-blueprints. It is a good book and I would recommend it to anyone who wants to explore Nodejs further. It has lots of very good examples.
+
+Happy coding.
